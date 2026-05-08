@@ -6,15 +6,6 @@ import numpy as np
 import streamlit as st
 import joblib
 
-@st.cache_resource
-def load_models():
-    demand = joblib.load("demand_model.pkl")
-    spoil = joblib.load("spoilage_model.pkl")
-    enc = joblib.load("encoders.pkl")
-    return demand, spoil, enc
-
-demand_model, spoil_model, encoders = load_models()
-st.set_page_config(layout="wide")
 
 # -----------------------------
 # SUBTLE PROFESSIONAL THEME
