@@ -90,21 +90,6 @@ h1, h2, h3 {
     color: #111827;
 }
 
-/* Recommendation Cards */
-.rec-card {
-    background: white;
-    padding: 18px;
-    border-radius: 14px;
-    height: 200px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-.rec-text {
-    font-size: 14px;
-    line-height: 1.7;
-    color: #374151;
-}
-
 /* Dataframe */
 [data-testid="stDataFrame"] {
     border-radius: 10px;
@@ -560,16 +545,31 @@ elif page == "Recommendations":
         with c1:
 
             st.markdown(f"""
-            <div class="rec-card"
-                 style="border-top:5px solid #ef4444;">
+            <div style="
+                background-color:white;
+                padding:18px;
+                border-radius:14px;
+                height:210px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+                border-top:5px solid #ef4444;
+            ">
 
-                <h4>High Waste Product</h4>
+                <h4 style="
+                    color:#111827;
+                    margin-bottom:15px;
+                ">
+                High Waste Product
+                </h4>
 
-                <div class="rec-text">
+                <p style="
+                    font-size:14px;
+                    line-height:1.7;
+                    color:#374151;
+                ">
                 Reduce procurement quantity for
                 <b>{top_product}</b>
                 to minimize spoilage losses.
-                </div>
+                </p>
 
             </div>
             """, unsafe_allow_html=True)
@@ -578,16 +578,31 @@ elif page == "Recommendations":
         with c2:
 
             st.markdown(f"""
-            <div class="rec-card"
-                 style="border-top:5px solid #2563eb;">
+            <div style="
+                background-color:white;
+                padding:18px;
+                border-radius:14px;
+                height:210px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+                border-top:5px solid #2563eb;
+            ">
 
-                <h4>Storage Optimization</h4>
+                <h4 style="
+                    color:#111827;
+                    margin-bottom:15px;
+                ">
+                Storage Optimization
+                </h4>
 
-                <div class="rec-text">
+                <p style="
+                    font-size:14px;
+                    line-height:1.7;
+                    color:#374151;
+                ">
                 Improve warehouse handling and
                 storage conditions in
                 <b>{top_location}</b>.
-                </div>
+                </p>
 
             </div>
             """, unsafe_allow_html=True)
@@ -604,14 +619,29 @@ elif page == "Recommendations":
             )
 
             st.markdown(f"""
-            <div class="rec-card"
-                 style="border-top:5px solid #f59e0b;">
+            <div style="
+                background-color:white;
+                padding:18px;
+                border-radius:14px;
+                height:210px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+                border-top:5px solid #f59e0b;
+            ">
 
-                <h4>Temperature Risk</h4>
+                <h4 style="
+                    color:#111827;
+                    margin-bottom:15px;
+                ">
+                Temperature Risk
+                </h4>
 
-                <div class="rec-text">
+                <p style="
+                    font-size:14px;
+                    line-height:1.7;
+                    color:#374151;
+                ">
                 {temp_msg}
-                </div>
+                </p>
 
             </div>
             """, unsafe_allow_html=True)
@@ -620,15 +650,30 @@ elif page == "Recommendations":
         with c4:
 
             st.markdown("""
-            <div class="rec-card"
-                 style="border-top:5px solid #10b981;">
+            <div style="
+                background-color:white;
+                padding:18px;
+                border-radius:14px;
+                height:210px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+                border-top:5px solid #10b981;
+            ">
 
-                <h4>Inventory Rotation</h4>
+                <h4 style="
+                    color:#111827;
+                    margin-bottom:15px;
+                ">
+                Inventory Rotation
+                </h4>
 
-                <div class="rec-text">
+                <p style="
+                    font-size:14px;
+                    line-height:1.7;
+                    color:#374151;
+                ">
                 Prioritize low shelf-life inventory
                 to reduce future wastage.
-                </div>
+                </p>
 
             </div>
             """, unsafe_allow_html=True)
