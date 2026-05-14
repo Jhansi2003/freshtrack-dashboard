@@ -18,7 +18,7 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* Main App Background */
+/* Main Background */
 .stApp {
     background-color: #f5f7fa;
 }
@@ -558,86 +558,114 @@ elif page == "Recommendations":
         st.markdown('</div>', unsafe_allow_html=True)
 
         # =================================================
-        # RECOMMENDATION CARDS
+        # STRATEGIC RECOMMENDATIONS
         # =================================================
         st.subheader("Strategic Recommendations")
 
-        col1, col2 = st.columns(2)
+        c1, c2, c3, c4 = st.columns(4)
 
-        with col1:
+        # CARD 1
+        with c1:
 
             st.markdown(f"""
             <div style="
                 background:white;
-                padding:20px;
+                padding:18px;
                 border-radius:14px;
-                margin-bottom:15px;
+                height:190px;
                 box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-left:5px solid #ef4444;
+                border-top:5px solid #ef4444;
             ">
-                <h4>High Waste Product</h4>
-                <p>
-                Reduce procurement quantity for 
-                <b>{top_product}</b> 
+                <h4 style="margin-bottom:10px;">
+                High Waste Product
+                </h4>
+
+                <p style="font-size:14px;">
+                Reduce procurement quantity for
+                <b>{top_product}</b>
                 to minimize spoilage losses.
                 </p>
             </div>
             """, unsafe_allow_html=True)
 
+        # CARD 2
+        with c2:
+
             st.markdown(f"""
             <div style="
                 background:white;
-                padding:20px;
+                padding:18px;
                 border-radius:14px;
-                margin-bottom:15px;
+                height:190px;
                 box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-left:5px solid #2563eb;
+                border-top:5px solid #2563eb;
             ">
-                <h4>Storage Optimization</h4>
-                <p>
-                Improve warehouse handling and storage
-                conditions in <b>{top_location}</b>.
+                <h4 style="margin-bottom:10px;">
+                Storage Optimization
+                </h4>
+
+                <p style="font-size:14px;">
+                Improve warehouse handling and
+                storage conditions in
+                <b>{top_location}</b>.
                 </p>
             </div>
             """, unsafe_allow_html=True)
 
-        with col2:
+        # CARD 3
+        with c3:
 
-            if avg_temp > 30:
+            temp_msg = (
+                "High warehouse temperature detected. "
+                "Deploy cooling optimization."
+                if avg_temp > 30
+                else
+                "Warehouse temperature is within safe range."
+            )
 
-                st.markdown("""
-                <div style="
-                    background:white;
-                    padding:20px;
-                    border-radius:14px;
-                    margin-bottom:15px;
-                    box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                    border-left:5px solid #f59e0b;
-                ">
-                    <h4>Temperature Risk</h4>
-                    <p>
-                    High warehouse temperature detected.
-                    Deploy cooling optimization strategies.
-                    </p>
-                </div>
-                """, unsafe_allow_html=True)
+            st.markdown(f"""
+            <div style="
+                background:white;
+                padding:18px;
+                border-radius:14px;
+                height:190px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+                border-top:5px solid #f59e0b;
+            ">
+                <h4 style="margin-bottom:10px;">
+                Temperature Risk
+                </h4>
+
+                <p style="font-size:14px;">
+                {temp_msg}
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # CARD 4
+        with c4:
 
             st.markdown("""
             <div style="
                 background:white;
-                padding:20px;
+                padding:18px;
                 border-radius:14px;
-                margin-bottom:15px;
+                height:190px;
                 box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-left:5px solid #10b981;
+                border-top:5px solid #10b981;
             ">
-                <h4>Inventory Rotation</h4>
-                <p>
-                Prioritize low shelf-life inventory to
-                reduce future wastage.
+                <h4 style="margin-bottom:10px;">
+                Inventory Rotation
+                </h4>
+
+                <p style="font-size:14px;">
+                Prioritize low shelf-life inventory
+                to reduce future wastage.
                 </p>
             </div>
             """, unsafe_allow_html=True)
+
+        st.write("")
 
         # =================================================
         # CHARTS
