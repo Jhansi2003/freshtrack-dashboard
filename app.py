@@ -519,7 +519,7 @@ elif page == "Recommendations":
         c1, c2 = st.columns(2)
 
         # =================================================
-        # WASTE LINE CHART
+        # WASTE SCATTER PLOT
         # =================================================
         with c1:
 
@@ -531,19 +531,20 @@ elif page == "Recommendations":
                 .reset_index()
             )
 
-            fig = px.line(
+            fig = px.scatter(
                 waste_products,
                 x='product_name',
                 y='quantity_wasted_kg',
+                size='quantity_wasted_kg',
                 title="Top Waste Products",
-                markers=True,
-                color_discrete_sequence=[brand_color]
+                color='quantity_wasted_kg',
+                color_continuous_scale='Blues',
+                height=400
             )
 
             fig.update_layout(
                 plot_bgcolor='white',
-                paper_bgcolor='white',
-                height=400
+                paper_bgcolor='white'
             )
 
             st.plotly_chart(
