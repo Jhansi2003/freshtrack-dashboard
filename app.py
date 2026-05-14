@@ -365,7 +365,6 @@ elif page == "ML Prediction":
         "month": today.month
     }])
 
-    # EXACT FEATURE ORDER
     input_data = input_data[[
         'warehouse_id',
         'product_id',
@@ -519,6 +518,9 @@ elif page == "Recommendations":
 
         c1, c2 = st.columns(2)
 
+        # =================================================
+        # WASTE LINE CHART
+        # =================================================
         with c1:
 
             waste_products = (
@@ -529,12 +531,19 @@ elif page == "Recommendations":
                 .reset_index()
             )
 
-            fig = px.bar(
+            fig = px.line(
                 waste_products,
                 x='product_name',
                 y='quantity_wasted_kg',
                 title="Top Waste Products",
+                markers=True,
                 color_discrete_sequence=[brand_color]
+            )
+
+            fig.update_layout(
+                plot_bgcolor='white',
+                paper_bgcolor='white',
+                height=400
             )
 
             st.plotly_chart(
@@ -542,6 +551,9 @@ elif page == "Recommendations":
                 use_container_width=True
             )
 
+        # =================================================
+        # LOCATION PIE CHART
+        # =================================================
         with c2:
 
             loss_loc = (
@@ -550,12 +562,18 @@ elif page == "Recommendations":
                 .reset_index()
             )
 
-            fig2 = px.bar(
+            fig2 = px.pie(
                 loss_loc,
-                x='location',
-                y='loss_amount_inr',
-                title="Loss by Location",
-                color_discrete_sequence=["#ef4444"]
+                values='loss_amount_inr',
+                names='location',
+                title="Loss Distribution by Location",
+                hole=0.45,
+                color_discrete_sequence=colors
+            )
+
+            fig2.update_layout(
+                height=400,
+                paper_bgcolor='white'
             )
 
             st.plotly_chart(
