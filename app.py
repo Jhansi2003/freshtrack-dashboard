@@ -4,49 +4,51 @@ import plotly.express as px
 import joblib
 import numpy as np
 
-# -----------------------------
+# =========================================================
 # PAGE CONFIG
-# -----------------------------
+# =========================================================
 st.set_page_config(
     page_title="FreshTrack AI",
     layout="wide"
 )
 
-# -----------------------------
-# PROFESSIONAL THEME
-# -----------------------------
+# =========================================================
+# CUSTOM STYLING
+# =========================================================
 st.markdown("""
 <style>
 
-/* Main Background */
+/* Main App Background */
 .stApp {
     background-color: #f5f7fa;
 }
 
-/* Section Containers */
+/* Section Cards */
 .section {
     background-color: white;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 /* KPI Cards */
 [data-testid="stMetric"] {
     background-color: white;
-    border-left: 4px solid #3b82f6;
-    padding: 10px;
-    border-radius: 10px;
+    border-left: 4px solid #2563eb;
+    padding: 12px;
+    border-radius: 12px;
 }
 
 /* KPI Text */
 [data-testid="stMetricValue"] {
     font-size: 22px;
+    color: #111827;
 }
 
 [data-testid="stMetricLabel"] {
     font-size: 13px;
+    color: #6b7280;
 }
 
 /* Sidebar */
@@ -65,6 +67,7 @@ st.markdown("""
     border-radius: 8px;
     border: none;
     height: 42px;
+    width: 100%;
 }
 
 .stButton > button:hover {
@@ -74,23 +77,27 @@ st.markdown("""
 /* Dropdown */
 div[data-baseweb="select"] > div {
     border-radius: 8px;
-    border: 1px solid #d1d5db;
 }
 
-/* Titles */
+/* Headers */
 h1, h2, h3 {
-    color: #1f2937;
+    color: #111827;
+}
+
+/* Dataframe */
+[data-testid="stDataFrame"] {
+    border-radius: 10px;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-brand_color = "#3b82f6"
+brand_color = "#2563eb"
 colors = px.colors.qualitative.Set2
 
-# -----------------------------
+# =========================================================
 # SIDEBAR NAVIGATION
-# -----------------------------
+# =========================================================
 st.sidebar.title("FreshTrack AI")
 
 page = st.sidebar.radio(
@@ -114,12 +121,11 @@ if page == "Dashboard":
     if file:
 
         df = pd.read_csv(file)
-
         df['date'] = pd.to_datetime(df['date'])
 
-        # -------------------------------------------------
+        # =================================================
         # FILTERS
-        # -------------------------------------------------
+        # =================================================
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         c1, c2, c3 = st.columns(3)
@@ -153,9 +159,9 @@ if page == "Dashboard":
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # -------------------------------------------------
+        # =================================================
         # KPI METRICS
-        # -------------------------------------------------
+        # =================================================
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         total_ordered = df['quantity_ordered_kg'].sum()
@@ -170,25 +176,44 @@ if page == "Dashboard":
 
         c1, c2, c3, c4 = st.columns(4)
 
-        c1.metric("Ordered", f"{total_ordered:,.0f} KG")
-        c2.metric("Used", f"{total_used:,.0f} KG")
-        c3.metric("Waste %", f"{waste_pct:.2f}%")
-        c4.metric("Loss", f"₹ {total_loss:,.0f}")
+        c1.metric(
+            "Ordered",
+            f"{total_ordered:,.0f} KG"
+        )
+
+        c2.metric(
+            "Used",
+            f"{total_used:,.0f} KG"
+        )
+
+        c3.metric(
+            "Waste %",
+            f"{waste_pct:.2f}%"
+        )
+
+        c4.metric(
+            "Loss",
+            f"₹ {total_loss:,.0f}"
+        )
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # -------------------------------------------------
+        # =================================================
         # INSIGHTS
-        # -------------------------------------------------
+        # =================================================
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
-        top_product = df.groupby(
-            'product_name'
-        )['quantity_wasted_kg'].sum().idxmax()
+        top_product = (
+            df.groupby('product_name')['quantity_wasted_kg']
+            .sum()
+            .idxmax()
+        )
 
-        top_location = df.groupby(
-            'location'
-        )['loss_amount_inr'].sum().idxmax()
+        top_location = (
+            df.groupby('location')['loss_amount_inr']
+            .sum()
+            .idxmax()
+        )
 
         mean = df['quantity_wasted_kg'].mean()
         std = df['quantity_wasted_kg'].std()
@@ -224,9 +249,9 @@ if page == "Dashboard":
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # -------------------------------------------------
+        # =================================================
         # CHARTS
-        # -------------------------------------------------
+        # =================================================
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         c1, c2 = st.columns(2)
@@ -245,7 +270,7 @@ if page == "Dashboard":
                 trend,
                 x='date',
                 y='quantity_wasted_kg',
-                height=300
+                height=320
             )
 
             fig.update_traces(
@@ -266,7 +291,7 @@ if page == "Dashboard":
                 x='temperature_celsius',
                 y='quantity_wasted_kg',
                 color_discrete_sequence=[brand_color],
-                height=300
+                height=320
             )
 
             st.plotly_chart(
@@ -332,7 +357,7 @@ if page == "Dashboard":
 # =========================================================
 elif page == "ML Prediction":
 
-    st.title("ML Prediction")
+    st.title("ML Prediction Center")
 
     demand_model = joblib.load("demand_model.pkl")
     spoil_model = joblib.load("spoilage_model.pkl")
@@ -434,7 +459,6 @@ elif page == "ML Prediction":
     if st.button("Predict"):
 
         demand = demand_model.predict(input_data)[0]
-
         spoil = spoil_model.predict(input_data)[0]
 
         st.success(
@@ -453,7 +477,10 @@ elif page == "ML Prediction":
 # =========================================================
 elif page == "Recommendations":
 
-    st.title("Smart Recommendations")
+    st.title("AI Recommendation Center")
+    st.caption(
+        "Smart insights for inventory optimization and spoilage reduction"
+    )
 
     file = st.file_uploader(
         "Upload Dataset",
@@ -464,11 +491,14 @@ elif page == "Recommendations":
     if file:
 
         df = pd.read_csv(file)
-
         df['date'] = pd.to_datetime(df['date'])
 
+        # =================================================
+        # CALCULATIONS
+        # =================================================
         total_ordered = df['quantity_ordered_kg'].sum()
         total_waste = df['quantity_wasted_kg'].sum()
+        total_loss = df['loss_amount_inr'].sum()
 
         waste_pct = (
             (total_waste / total_ordered) * 100
@@ -498,93 +528,224 @@ elif page == "Recommendations":
 
         anomaly_count = len(df[df['anomaly']])
 
-        # -------------------------------------------------
-        # RECOMMENDATION CARDS
-        # -------------------------------------------------
+        # =================================================
+        # SUMMARY METRICS
+        # =================================================
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
-        st.subheader("AI Recommendations")
+        c1, c2, c3, c4 = st.columns(4)
 
-        if waste_pct > 10:
-            st.warning(
-                f"High waste detected ({waste_pct:.2f}%). "
-                f"Reduce ordering for {top_product}."
-            )
-        else:
-            st.success("Waste levels are healthy.")
-
-        st.info(
-            f"Improve storage conditions in "
-            f"{top_location}."
+        c1.metric(
+            "Waste %",
+            f"{waste_pct:.2f}%"
         )
 
-        if avg_temp > 30:
-            st.error(
-                "Warehouse temperature is high. "
-                "Optimize cooling systems."
+        c2.metric(
+            "Total Waste",
+            f"{total_waste:,.0f} KG"
+        )
+
+        c3.metric(
+            "Financial Loss",
+            f"₹ {total_loss:,.0f}"
+        )
+
+        c4.metric(
+            "Anomalies",
+            anomaly_count
+        )
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # =================================================
+        # RECOMMENDATION CARDS
+        # =================================================
+        st.subheader("Strategic Recommendations")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+
+            st.markdown(f"""
+            <div style="
+                background:white;
+                padding:20px;
+                border-radius:14px;
+                margin-bottom:15px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+                border-left:5px solid #ef4444;
+            ">
+                <h4>High Waste Product</h4>
+                <p>
+                Reduce procurement quantity for 
+                <b>{top_product}</b> 
+                to minimize spoilage losses.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown(f"""
+            <div style="
+                background:white;
+                padding:20px;
+                border-radius:14px;
+                margin-bottom:15px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+                border-left:5px solid #2563eb;
+            ">
+                <h4>Storage Optimization</h4>
+                <p>
+                Improve warehouse handling and storage
+                conditions in <b>{top_location}</b>.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with col2:
+
+            if avg_temp > 30:
+
+                st.markdown("""
+                <div style="
+                    background:white;
+                    padding:20px;
+                    border-radius:14px;
+                    margin-bottom:15px;
+                    box-shadow:0 2px 10px rgba(0,0,0,0.05);
+                    border-left:5px solid #f59e0b;
+                ">
+                    <h4>Temperature Risk</h4>
+                    <p>
+                    High warehouse temperature detected.
+                    Deploy cooling optimization strategies.
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("""
+            <div style="
+                background:white;
+                padding:20px;
+                border-radius:14px;
+                margin-bottom:15px;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+                border-left:5px solid #10b981;
+            ">
+                <h4>Inventory Rotation</h4>
+                <p>
+                Prioritize low shelf-life inventory to
+                reduce future wastage.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # =================================================
+        # CHARTS
+        # =================================================
+        st.markdown('<div class="section">', unsafe_allow_html=True)
+
+        st.subheader("Operational Insights")
+
+        c1, c2 = st.columns(2)
+
+        with c1:
+
+            waste_products = (
+                df.groupby('product_name')['quantity_wasted_kg']
+                .sum()
+                .sort_values(ascending=False)
+                .head(5)
+                .reset_index()
             )
 
-        if anomaly_count > 0:
-            st.warning(
-                f"{anomaly_count} anomalies detected."
+            fig = px.bar(
+                waste_products,
+                x='product_name',
+                y='quantity_wasted_kg',
+                title="Top Waste Products",
+                color_discrete_sequence=[brand_color]
             )
 
-        low_shelf = df[df['shelf_life_days'] < 5]
+            fig.update_layout(
+                height=350,
+                plot_bgcolor="white",
+                paper_bgcolor="white"
+            )
 
-        if len(low_shelf) > 0:
-            st.info(
-                "Low shelf-life products detected. "
-                "Prioritize inventory rotation."
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+        with c2:
+
+            loss_loc = (
+                df.groupby('location')['loss_amount_inr']
+                .sum()
+                .reset_index()
+            )
+
+            fig2 = px.bar(
+                loss_loc,
+                x='location',
+                y='loss_amount_inr',
+                title="Loss by Location",
+                color_discrete_sequence=["#ef4444"]
+            )
+
+            fig2.update_layout(
+                height=350,
+                plot_bgcolor="white",
+                paper_bgcolor="white"
+            )
+
+            st.plotly_chart(
+                fig2,
+                use_container_width=True
             )
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # -------------------------------------------------
-        # CHARTS
-        # -------------------------------------------------
+        # =================================================
+        # ACTION PLAN TABLE
+        # =================================================
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
-        st.subheader("Recommendation Insights")
+        st.subheader("Priority Action Plan")
 
-        waste_products = (
-            df.groupby('product_name')['quantity_wasted_kg']
-            .sum()
-            .sort_values(ascending=False)
-            .head(5)
-            .reset_index()
-        )
+        actions = pd.DataFrame({
 
-        fig = px.bar(
-            waste_products,
-            x='product_name',
-            y='quantity_wasted_kg',
-            color_discrete_sequence=[brand_color]
-        )
+            "Priority": [
+                "High",
+                "Medium",
+                "Medium",
+                "Low"
+            ],
 
-        st.plotly_chart(
-            fig,
-            use_container_width=True
-        )
+            "Area": [
+                "Inventory Planning",
+                "Warehouse Cooling",
+                "Storage Optimization",
+                "Demand Forecasting"
+            ],
 
-        loss_loc = (
-            df.groupby('location')['loss_amount_inr']
-            .sum()
-            .reset_index()
-        )
+            "Recommendation": [
+                f"Reduce ordering for {top_product}",
+                "Monitor warehouse temperature",
+                f"Improve storage in {top_location}",
+                "Use ML prediction before procurement"
+            ]
+        })
 
-        fig2 = px.bar(
-            loss_loc,
-            x='location',
-            y='loss_amount_inr',
-            color_discrete_sequence=[brand_color]
-        )
-
-        st.plotly_chart(
-            fig2,
-            use_container_width=True
+        st.dataframe(
+            actions,
+            use_container_width=True,
+            hide_index=True
         )
 
         st.markdown('</div>', unsafe_allow_html=True)
 
     else:
-        st.info("Upload dataset to generate recommendations.")
+        st.info(
+            "Upload dataset to generate AI recommendations."
+        )
