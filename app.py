@@ -5,64 +5,81 @@ import joblib
 import numpy as np
 
 # -----------------------------
-# SUBTLE PROFESSIONAL THEME
+# PAGE CONFIG
+# -----------------------------
+st.set_page_config(
+    page_title="FreshTrack AI",
+    layout="wide"
+)
+
+# -----------------------------
+# PROFESSIONAL THEME
 # -----------------------------
 st.markdown("""
 <style>
 
-/* Background */
+/* Main Background */
 .stApp {
     background-color: #f5f7fa;
 }
 
-/* Section cards */
+/* Section Containers */
 .section {
     background-color: white;
-    border-radius: 10px;
-    padding: 12px;
-    margin-bottom: 12px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
-/* Compact KPI */
+/* KPI Cards */
 [data-testid="stMetric"] {
     background-color: white;
-    border-left: 3px solid #3b82f6;
-    border-radius: 8px;
-    padding: 6px 8px;
-    margin: 2px;
+    border-left: 4px solid #3b82f6;
+    padding: 10px;
+    border-radius: 10px;
 }
 
+/* KPI Text */
 [data-testid="stMetricValue"] {
-    font-size: 18px;
+    font-size: 22px;
 }
 
 [data-testid="stMetricLabel"] {
-    font-size: 12px;
-}
-
-/* Titles */
-h1, h2, h3 {
-    color: #1f2937;
-}
-
-/* Buttons */
-.stButton > button {
-    background-color: #3b82f6;
-    color: white;
-    border-radius: 6px;
-    border: none;
-}
-.stButton > button:hover {
-    background-color: #2563eb;
+    font-size: 13px;
 }
 
 /* Sidebar */
 [data-testid="stSidebar"] {
     background-color: #111827;
 }
+
 [data-testid="stSidebar"] * {
     color: white !important;
+}
+
+/* Buttons */
+.stButton > button {
+    background-color: #2563eb;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    height: 42px;
+}
+
+.stButton > button:hover {
+    background-color: #1d4ed8;
+}
+
+/* Dropdown */
+div[data-baseweb="select"] > div {
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+}
+
+/* Titles */
+h1, h2, h3 {
+    color: #1f2937;
 }
 
 </style>
@@ -72,18 +89,18 @@ brand_color = "#3b82f6"
 colors = px.colors.qualitative.Set2
 
 # -----------------------------
-# NAVIGATION
+# SIDEBAR NAVIGATION
 # -----------------------------
-st.sidebar.title("Navigation")
+st.sidebar.title("FreshTrack AI")
 
 page = st.sidebar.radio(
-    "",
+    "Navigation",
     ["Dashboard", "ML Prediction", "Recommendations"]
 )
 
-# =============================
+# =========================================================
 # DASHBOARD PAGE
-# =============================
+# =========================================================
 if page == "Dashboard":
 
     st.title("FreshTrack AI Dashboard")
@@ -97,25 +114,24 @@ if page == "Dashboard":
     if file:
 
         df = pd.read_csv(file)
+
         df['date'] = pd.to_datetime(df['date'])
 
-        # -----------------------------
+        # -------------------------------------------------
         # FILTERS
-        # -----------------------------
+        # -------------------------------------------------
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         c1, c2, c3 = st.columns(3)
 
-        product = c1.multiselect(
-            "Product",
-            df['product_name'].unique(),
-            df['product_name'].unique()
+        product = c1.selectbox(
+            "Select Product",
+            ["All"] + list(df['product_name'].unique())
         )
 
-        location = c2.multiselect(
-            "Location",
-            df['location'].unique(),
-            df['location'].unique()
+        location = c2.selectbox(
+            "Select Location",
+            ["All"] + list(df['location'].unique())
         )
 
         date_range = c3.date_input(
@@ -123,18 +139,23 @@ if page == "Dashboard":
             [df['date'].min(), df['date'].max()]
         )
 
+        # Apply Filters
+        if product != "All":
+            df = df[df['product_name'] == product]
+
+        if location != "All":
+            df = df[df['location'] == location]
+
         df = df[
-            (df['product_name'].isin(product)) &
-            (df['location'].isin(location)) &
             (df['date'] >= pd.to_datetime(date_range[0])) &
             (df['date'] <= pd.to_datetime(date_range[1]))
         ]
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # -----------------------------
-        # KPIs
-        # -----------------------------
+        # -------------------------------------------------
+        # KPI METRICS
+        # -------------------------------------------------
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         total_ordered = df['quantity_ordered_kg'].sum()
@@ -149,16 +170,16 @@ if page == "Dashboard":
 
         c1, c2, c3, c4 = st.columns(4)
 
-        c1.metric("Ordered", f"{total_ordered:,.0f}")
-        c2.metric("Used", f"{total_used:,.0f}")
+        c1.metric("Ordered", f"{total_ordered:,.0f} KG")
+        c2.metric("Used", f"{total_used:,.0f} KG")
         c3.metric("Waste %", f"{waste_pct:.2f}%")
-        c4.metric("Loss ₹", f"{total_loss:,.0f}")
+        c4.metric("Loss", f"₹ {total_loss:,.0f}")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # -----------------------------
+        # -------------------------------------------------
         # INSIGHTS
-        # -----------------------------
+        # -------------------------------------------------
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         top_product = df.groupby(
@@ -169,12 +190,6 @@ if page == "Dashboard":
             'location'
         )['loss_amount_inr'].sum().idxmax()
 
-        col_i1, col_i2 = st.columns(2)
-
-        col_i1.success(f"Top Waste Product: {top_product}")
-        col_i2.warning(f"High Loss Location: {top_location}")
-
-        # Anomaly Detection
         mean = df['quantity_wasted_kg'].mean()
         std = df['quantity_wasted_kg'].std()
 
@@ -184,7 +199,6 @@ if page == "Dashboard":
 
         anomalies = df[df['anomaly']]
 
-        # Health Score
         score = 100
 
         if waste_pct > 10:
@@ -205,17 +219,21 @@ if page == "Dashboard":
             f"{(len(anomalies)/len(df))*100:.2f}%"
         )
 
+        st.success(f"Top Waste Product: {top_product}")
+        st.warning(f"High Loss Location: {top_location}")
+
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # -----------------------------
+        # -------------------------------------------------
         # CHARTS
-        # -----------------------------
+        # -------------------------------------------------
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         c1, c2 = st.columns(2)
 
         with c1:
-            st.markdown("### Waste Trend Over Time")
+
+            st.subheader("Waste Trend Over Time")
 
             trend = (
                 df.groupby('date')['quantity_wasted_kg']
@@ -240,7 +258,8 @@ if page == "Dashboard":
             )
 
         with c2:
-            st.markdown("### Temperature vs Waste")
+
+            st.subheader("Temperature vs Waste")
 
             fig = px.scatter(
                 df,
@@ -258,7 +277,8 @@ if page == "Dashboard":
         c3, c4 = st.columns(2)
 
         with c3:
-            st.markdown("### Waste by Category")
+
+            st.subheader("Waste by Category")
 
             waste_cat = (
                 df.groupby('category')['quantity_wasted_kg']
@@ -280,7 +300,8 @@ if page == "Dashboard":
             )
 
         with c4:
-            st.markdown("### Loss by Location")
+
+            st.subheader("Loss by Location")
 
             loss_loc = (
                 df.groupby('location')['loss_amount_inr']
@@ -304,12 +325,11 @@ if page == "Dashboard":
         st.markdown('</div>', unsafe_allow_html=True)
 
     else:
-        st.info("Upload dataset to begin")
+        st.info("Upload dataset to begin.")
 
-
-# =============================
+# =========================================================
 # ML PREDICTION PAGE
-# =============================
+# =========================================================
 elif page == "ML Prediction":
 
     st.title("ML Prediction")
@@ -330,6 +350,7 @@ elif page == "ML Prediction":
     c1, c2, c3 = st.columns(3)
 
     with c1:
+
         product = st.selectbox(
             "Product",
             encoders['product_name'].classes_
@@ -341,6 +362,7 @@ elif page == "ML Prediction":
         )
 
     with c2:
+
         quantity = st.number_input(
             "Quantity",
             10,
@@ -363,6 +385,7 @@ elif page == "ML Prediction":
         )
 
     with c3:
+
         unit_cost = st.number_input(
             "Unit Cost",
             10,
@@ -411,6 +434,7 @@ elif page == "ML Prediction":
     if st.button("Predict"):
 
         demand = demand_model.predict(input_data)[0]
+
         spoil = spoil_model.predict(input_data)[0]
 
         st.success(
@@ -424,10 +448,9 @@ elif page == "ML Prediction":
 
     st.markdown('</div>', unsafe_allow_html=True)
 
-
-# =============================
+# =========================================================
 # RECOMMENDATIONS PAGE
-# =============================
+# =========================================================
 elif page == "Recommendations":
 
     st.title("Smart Recommendations")
@@ -441,11 +464,9 @@ elif page == "Recommendations":
     if file:
 
         df = pd.read_csv(file)
+
         df['date'] = pd.to_datetime(df['date'])
 
-        # -----------------------------
-        # METRICS
-        # -----------------------------
         total_ordered = df['quantity_ordered_kg'].sum()
         total_waste = df['quantity_wasted_kg'].sum()
 
@@ -477,9 +498,9 @@ elif page == "Recommendations":
 
         anomaly_count = len(df[df['anomaly']])
 
-        # -----------------------------
+        # -------------------------------------------------
         # RECOMMENDATION CARDS
-        # -----------------------------
+        # -------------------------------------------------
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         st.subheader("AI Recommendations")
@@ -487,15 +508,13 @@ elif page == "Recommendations":
         if waste_pct > 10:
             st.warning(
                 f"High waste detected ({waste_pct:.2f}%). "
-                f"Reduce ordering volume for {top_product}."
+                f"Reduce ordering for {top_product}."
             )
         else:
-            st.success(
-                "Waste levels are under control."
-            )
+            st.success("Waste levels are healthy.")
 
         st.info(
-            f"Improve warehouse storage conditions in "
+            f"Improve storage conditions in "
             f"{top_location}."
         )
 
@@ -507,7 +526,7 @@ elif page == "Recommendations":
 
         if anomaly_count > 0:
             st.warning(
-                f"{anomaly_count} unusual waste anomalies detected."
+                f"{anomaly_count} anomalies detected."
             )
 
         low_shelf = df[df['shelf_life_days'] < 5]
@@ -520,9 +539,9 @@ elif page == "Recommendations":
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # -----------------------------
-        # RECOMMENDATION CHARTS
-        # -----------------------------
+        # -------------------------------------------------
+        # CHARTS
+        # -------------------------------------------------
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         st.subheader("Recommendation Insights")
@@ -539,7 +558,6 @@ elif page == "Recommendations":
             waste_products,
             x='product_name',
             y='quantity_wasted_kg',
-            title="Top Waste Products",
             color_discrete_sequence=[brand_color]
         )
 
@@ -548,7 +566,6 @@ elif page == "Recommendations":
             use_container_width=True
         )
 
-        # Loss by location
         loss_loc = (
             df.groupby('location')['loss_amount_inr']
             .sum()
@@ -559,7 +576,6 @@ elif page == "Recommendations":
             loss_loc,
             x='location',
             y='loss_amount_inr',
-            title="Loss by Location",
             color_discrete_sequence=[brand_color]
         )
 
@@ -571,6 +587,4 @@ elif page == "Recommendations":
         st.markdown('</div>', unsafe_allow_html=True)
 
     else:
-        st.info(
-            "Upload dataset to generate recommendations"
-        )
+        st.info("Upload dataset to generate recommendations.")
