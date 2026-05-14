@@ -438,6 +438,9 @@ elif page == "Recommendations":
 
         avg_temp = df['temperature_celsius'].mean()
 
+        # =================================================
+        # KPI METRICS
+        # =================================================
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         c1, c2, c3, c4 = st.columns(4)
@@ -450,7 +453,7 @@ elif page == "Recommendations":
         st.markdown('</div>', unsafe_allow_html=True)
 
         # =================================================
-        # RECOMMENDATION CARDS
+        # STRATEGIC RECOMMENDATIONS
         # =================================================
         st.subheader("Strategic Recommendations")
 
@@ -559,6 +562,45 @@ elif page == "Recommendations":
                 fig2,
                 use_container_width=True
             )
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # =================================================
+        # ACTION PLAN TABLE
+        # =================================================
+        st.markdown('<div class="section">', unsafe_allow_html=True)
+
+        st.subheader("Priority Action Plan")
+
+        actions = pd.DataFrame({
+
+            "Priority": [
+                "High",
+                "Medium",
+                "Medium",
+                "Low"
+            ],
+
+            "Area": [
+                "Inventory Planning",
+                "Warehouse Cooling",
+                "Storage Optimization",
+                "Demand Forecasting"
+            ],
+
+            "Recommendation": [
+                f"Reduce ordering for {top_product}",
+                "Monitor warehouse temperature",
+                f"Improve storage in {top_location}",
+                "Use ML prediction before procurement"
+            ]
+        })
+
+        st.dataframe(
+            actions,
+            use_container_width=True,
+            hide_index=True
+        )
 
         st.markdown('</div>', unsafe_allow_html=True)
 
