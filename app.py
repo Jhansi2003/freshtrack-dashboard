@@ -537,60 +537,75 @@ elif page == "Recommendations":
         # =================================================
         st.subheader("Strategic Recommendations")
 
-        c1, c2, c3, c4 = st.columns(4)
+        recommendation_html = f"""
+        <div style="display:flex;gap:15px;">
 
-        # CARD 1
-        with c1:
+            <div style="
+                flex:1;
+                background-color:white;
+                padding:20px;
+                border-radius:12px;
+                border-top:5px solid #ef4444;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+            ">
+                <h4>High Waste Product</h4>
+                <p>
+                Reduce procurement quantity for
+                <b>{top_product}</b>
+                to minimize spoilage losses.
+                </p>
+            </div>
 
-            with st.container(border=True):
+            <div style="
+                flex:1;
+                background-color:white;
+                padding:20px;
+                border-radius:12px;
+                border-top:5px solid #2563eb;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+            ">
+                <h4>Storage Optimization</h4>
+                <p>
+                Improve warehouse handling and storage
+                conditions in <b>{top_location}</b>.
+                </p>
+            </div>
 
-                st.markdown("### 🔴 High Waste Product")
-
-                st.write(
-                    f"Reduce procurement quantity for "
-                    f"**{top_product}** to minimize spoilage losses."
-                )
-
-        # CARD 2
-        with c2:
-
-            with st.container(border=True):
-
-                st.markdown("### 🔵 Storage Optimization")
-
-                st.write(
-                    f"Improve warehouse handling and "
-                    f"storage conditions in **{top_location}**."
-                )
-
-        # CARD 3
-        with c3:
-
-            temp_msg = (
-                "High warehouse temperature detected. "
-                "Deploy cooling optimization."
+            <div style="
+                flex:1;
+                background-color:white;
+                padding:20px;
+                border-radius:12px;
+                border-top:5px solid #f59e0b;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+            ">
+                <h4>Temperature Risk</h4>
+                <p>
+                {"High warehouse temperature detected. Deploy cooling optimization."
                 if avg_temp > 30
-                else
-                "Warehouse temperature is within safe range."
-            )
+                else "Warehouse temperature is within safe range."}
+                </p>
+            </div>
 
-            with st.container(border=True):
+            <div style="
+                flex:1;
+                background-color:white;
+                padding:20px;
+                border-radius:12px;
+                border-top:5px solid #10b981;
+                box-shadow:0 2px 10px rgba(0,0,0,0.05);
+            ">
+                <h4>Inventory Rotation</h4>
+                <p>
+                Prioritize low shelf-life inventory
+                to reduce future wastage.
+                </p>
+            </div>
 
-                st.markdown("### 🟠 Temperature Risk")
+        </div>
+        """
 
-                st.write(temp_msg)
-
-        # CARD 4
-        with c4:
-
-            with st.container(border=True):
-
-                st.markdown("### 🟢 Inventory Rotation")
-
-                st.write(
-                    "Prioritize low shelf-life inventory "
-                    "to reduce future wastage."
-                )
+        st.markdown(recommendation_html, unsafe_allow_html=True)
 
         st.write("")
 
