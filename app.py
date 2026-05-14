@@ -95,6 +95,40 @@ h1, h2, h3 {
     border-radius: 10px;
 }
 
+/* Recommendation Cards */
+.equal-card {
+    height: 220px;
+    padding: 18px;
+    border-radius: 14px;
+    color: #111827;
+    font-size: 15px;
+    line-height: 1.7;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.red-card {
+    background-color: #fee2e2;
+    border-left: 6px solid #ef4444;
+}
+
+.blue-card {
+    background-color: #dbeafe;
+    border-left: 6px solid #2563eb;
+}
+
+.orange-card {
+    background-color: #ffedd5;
+    border-left: 6px solid #f59e0b;
+}
+
+.green-card {
+    background-color: #dcfce7;
+    border-left: 6px solid #10b981;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -539,28 +573,35 @@ elif page == "Recommendations":
 
         c1, c2, c3, c4 = st.columns(4)
 
+        # CARD 1
         with c1:
-            st.info(
-                f"""
-                🔴 **High Waste Product**
 
+            st.markdown(f"""
+            <div class="equal-card red-card">
+                <h4>🔴 High Waste Product</h4>
+                <p>
                 Reduce procurement quantity for
-                **{top_product}**
+                <b>{top_product}</b>
                 to minimize spoilage losses.
-                """
-            )
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
 
+        # CARD 2
         with c2:
-            st.info(
-                f"""
-                🔵 **Storage Optimization**
 
+            st.markdown(f"""
+            <div class="equal-card blue-card">
+                <h4>🔵 Storage Optimization</h4>
+                <p>
                 Improve warehouse handling and
                 storage conditions in
-                **{top_location}**.
-                """
-            )
+                <b>{top_location}</b>.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
 
+        # CARD 3
         with c3:
 
             temp_msg = (
@@ -571,23 +612,25 @@ elif page == "Recommendations":
                 "Warehouse temperature is within safe range."
             )
 
-            st.warning(
-                f"""
-                🟠 **Temperature Risk**
+            st.markdown(f"""
+            <div class="equal-card orange-card">
+                <h4>🟠 Temperature Risk</h4>
+                <p>{temp_msg}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-                {temp_msg}
-                """
-            )
-
+        # CARD 4
         with c4:
-            st.success(
-                """
-                🟢 **Inventory Rotation**
 
+            st.markdown("""
+            <div class="equal-card green-card">
+                <h4>🟢 Inventory Rotation</h4>
+                <p>
                 Prioritize low shelf-life inventory
                 to reduce future wastage.
-                """
-            )
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
 
         st.write("")
 
