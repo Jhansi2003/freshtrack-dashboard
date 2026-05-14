@@ -542,62 +542,26 @@ elif page == "Recommendations":
         # CARD 1
         with c1:
 
-            card1 = f"""
-            <div style="
-                background:white;
-                padding:18px;
-                border-radius:14px;
-                height:220px;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-top:5px solid #ef4444;
-            ">
-                <h4 style="color:#111827;">
-                    High Waste Product
-                </h4>
+            with st.container(border=True):
 
-                <div style="
-                    font-size:14px;
-                    line-height:1.8;
-                    color:#374151;
-                ">
-                    Reduce procurement quantity for
-                    <b>{top_product}</b>
-                    to minimize spoilage losses.
-                </div>
-            </div>
-            """
+                st.markdown("### 🔴 High Waste Product")
 
-            st.markdown(card1, unsafe_allow_html=True)
+                st.write(
+                    f"Reduce procurement quantity for "
+                    f"**{top_product}** to minimize spoilage losses."
+                )
 
         # CARD 2
         with c2:
 
-            card2 = f"""
-            <div style="
-                background:white;
-                padding:18px;
-                border-radius:14px;
-                height:220px;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-top:5px solid #2563eb;
-            ">
-                <h4 style="color:#111827;">
-                    Storage Optimization
-                </h4>
+            with st.container(border=True):
 
-                <div style="
-                    font-size:14px;
-                    line-height:1.8;
-                    color:#374151;
-                ">
-                    Improve warehouse handling and
-                    storage conditions in
-                    <b>{top_location}</b>.
-                </div>
-            </div>
-            """
+                st.markdown("### 🔵 Storage Optimization")
 
-            st.markdown(card2, unsafe_allow_html=True)
+                st.write(
+                    f"Improve warehouse handling and "
+                    f"storage conditions in **{top_location}**."
+                )
 
         # CARD 3
         with c3:
@@ -610,59 +574,23 @@ elif page == "Recommendations":
                 "Warehouse temperature is within safe range."
             )
 
-            card3 = f"""
-            <div style="
-                background:white;
-                padding:18px;
-                border-radius:14px;
-                height:220px;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-top:5px solid #f59e0b;
-            ">
-                <h4 style="color:#111827;">
-                    Temperature Risk
-                </h4>
+            with st.container(border=True):
 
-                <div style="
-                    font-size:14px;
-                    line-height:1.8;
-                    color:#374151;
-                ">
-                    {temp_msg}
-                </div>
-            </div>
-            """
+                st.markdown("### 🟠 Temperature Risk")
 
-            st.markdown(card3, unsafe_allow_html=True)
+                st.write(temp_msg)
 
         # CARD 4
         with c4:
 
-            card4 = """
-            <div style="
-                background:white;
-                padding:18px;
-                border-radius:14px;
-                height:220px;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-top:5px solid #10b981;
-            ">
-                <h4 style="color:#111827;">
-                    Inventory Rotation
-                </h4>
+            with st.container(border=True):
 
-                <div style="
-                    font-size:14px;
-                    line-height:1.8;
-                    color:#374151;
-                ">
-                    Prioritize low shelf-life inventory
-                    to reduce future wastage.
-                </div>
-            </div>
-            """
+                st.markdown("### 🟢 Inventory Rotation")
 
-            st.markdown(card4, unsafe_allow_html=True)
+                st.write(
+                    "Prioritize low shelf-life inventory "
+                    "to reduce future wastage."
+                )
 
         st.write("")
 
