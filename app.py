@@ -3,6 +3,12 @@ import pandas as pd
 import plotly.express as px
 import joblib
 import numpy as np
+import warnings
+
+# =========================================================
+# REMOVE WARNINGS
+# =========================================================
+warnings.filterwarnings("ignore")
 
 # =========================================================
 # PAGE CONFIG
@@ -13,7 +19,7 @@ st.set_page_config(
 )
 
 # =========================================================
-# CUSTOM STYLING
+# CUSTOM CSS
 # =========================================================
 st.markdown("""
 <style>
@@ -84,6 +90,21 @@ h1, h2, h3 {
     color: #111827;
 }
 
+/* Recommendation Cards */
+.rec-card {
+    background: white;
+    padding: 18px;
+    border-radius: 14px;
+    height: 200px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.rec-text {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #374151;
+}
+
 /* Dataframe */
 [data-testid="stDataFrame"] {
     border-radius: 10px;
@@ -96,7 +117,7 @@ brand_color = "#2563eb"
 colors = px.colors.qualitative.Set2
 
 # =========================================================
-# SIDEBAR NAVIGATION
+# SIDEBAR
 # =========================================================
 st.sidebar.title("FreshTrack AI")
 
@@ -121,6 +142,7 @@ if page == "Dashboard":
     if file:
 
         df = pd.read_csv(file)
+
         df['date'] = pd.to_datetime(df['date'])
 
         # =================================================
@@ -176,25 +198,10 @@ if page == "Dashboard":
 
         c1, c2, c3, c4 = st.columns(4)
 
-        c1.metric(
-            "Ordered",
-            f"{total_ordered:,.0f} KG"
-        )
-
-        c2.metric(
-            "Used",
-            f"{total_used:,.0f} KG"
-        )
-
-        c3.metric(
-            "Waste %",
-            f"{waste_pct:.2f}%"
-        )
-
-        c4.metric(
-            "Loss",
-            f"₹ {total_loss:,.0f}"
-        )
+        c1.metric("Ordered", f"{total_ordered:,.0f} KG")
+        c2.metric("Used", f"{total_used:,.0f} KG")
+        c3.metric("Waste %", f"{waste_pct:.2f}%")
+        c4.metric("Loss", f"₹ {total_loss:,.0f}")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -439,22 +446,20 @@ elif page == "ML Prediction":
 
     today = pd.Timestamp.today()
 
-    input_data = np.array([
-        [
-            1,
-            safe_encode(encoders['product_name'], product),
-            safe_encode(encoders['category'], category),
-            101,
-            quantity,
-            unit_cost,
-            shelf_life,
-            temperature,
-            humidity,
-            storage_capacity,
-            today.weekday(),
-            today.month
-        ]
-    ])
+    input_data = pd.DataFrame([{
+        "store_id": 1,
+        "product_name": safe_encode(encoders['product_name'], product),
+        "category": safe_encode(encoders['category'], category),
+        "supplier_id": 101,
+        "quantity_ordered_kg": quantity,
+        "unit_cost_inr": unit_cost,
+        "shelf_life_days": shelf_life,
+        "temperature_celsius": temperature,
+        "humidity_percent": humidity,
+        "storage_capacity_kg": storage_capacity,
+        "weekday": today.weekday(),
+        "month": today.month
+    }])
 
     if st.button("Predict"):
 
@@ -478,6 +483,7 @@ elif page == "ML Prediction":
 elif page == "Recommendations":
 
     st.title("AI Recommendation Center")
+
     st.caption(
         "Smart insights for inventory optimization and spoilage reduction"
     )
@@ -491,6 +497,7 @@ elif page == "Recommendations":
     if file:
 
         df = pd.read_csv(file)
+
         df['date'] = pd.to_datetime(df['date'])
 
         # =================================================
@@ -535,25 +542,10 @@ elif page == "Recommendations":
 
         c1, c2, c3, c4 = st.columns(4)
 
-        c1.metric(
-            "Waste %",
-            f"{waste_pct:.2f}%"
-        )
-
-        c2.metric(
-            "Total Waste",
-            f"{total_waste:,.0f} KG"
-        )
-
-        c3.metric(
-            "Financial Loss",
-            f"₹ {total_loss:,.0f}"
-        )
-
-        c4.metric(
-            "Anomalies",
-            anomaly_count
-        )
+        c1.metric("Waste %", f"{waste_pct:.2f}%")
+        c2.metric("Total Waste", f"{total_waste:,.0f} KG")
+        c3.metric("Financial Loss", f"₹ {total_loss:,.0f}")
+        c4.metric("Anomalies", anomaly_count)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -568,23 +560,17 @@ elif page == "Recommendations":
         with c1:
 
             st.markdown(f"""
-            <div style="
-                background:white;
-                padding:18px;
-                border-radius:14px;
-                height:190px;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-top:5px solid #ef4444;
-            ">
-                <h4 style="margin-bottom:10px;">
-                High Waste Product
-                </h4>
+            <div class="rec-card"
+                 style="border-top:5px solid #ef4444;">
 
-                <p style="font-size:14px;">
+                <h4>High Waste Product</h4>
+
+                <div class="rec-text">
                 Reduce procurement quantity for
                 <b>{top_product}</b>
                 to minimize spoilage losses.
-                </p>
+                </div>
+
             </div>
             """, unsafe_allow_html=True)
 
@@ -592,23 +578,17 @@ elif page == "Recommendations":
         with c2:
 
             st.markdown(f"""
-            <div style="
-                background:white;
-                padding:18px;
-                border-radius:14px;
-                height:190px;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-top:5px solid #2563eb;
-            ">
-                <h4 style="margin-bottom:10px;">
-                Storage Optimization
-                </h4>
+            <div class="rec-card"
+                 style="border-top:5px solid #2563eb;">
 
-                <p style="font-size:14px;">
+                <h4>Storage Optimization</h4>
+
+                <div class="rec-text">
                 Improve warehouse handling and
                 storage conditions in
                 <b>{top_location}</b>.
-                </p>
+                </div>
+
             </div>
             """, unsafe_allow_html=True)
 
@@ -624,21 +604,15 @@ elif page == "Recommendations":
             )
 
             st.markdown(f"""
-            <div style="
-                background:white;
-                padding:18px;
-                border-radius:14px;
-                height:190px;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-top:5px solid #f59e0b;
-            ">
-                <h4 style="margin-bottom:10px;">
-                Temperature Risk
-                </h4>
+            <div class="rec-card"
+                 style="border-top:5px solid #f59e0b;">
 
-                <p style="font-size:14px;">
+                <h4>Temperature Risk</h4>
+
+                <div class="rec-text">
                 {temp_msg}
-                </p>
+                </div>
+
             </div>
             """, unsafe_allow_html=True)
 
@@ -646,22 +620,16 @@ elif page == "Recommendations":
         with c4:
 
             st.markdown("""
-            <div style="
-                background:white;
-                padding:18px;
-                border-radius:14px;
-                height:190px;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-                border-top:5px solid #10b981;
-            ">
-                <h4 style="margin-bottom:10px;">
-                Inventory Rotation
-                </h4>
+            <div class="rec-card"
+                 style="border-top:5px solid #10b981;">
 
-                <p style="font-size:14px;">
+                <h4>Inventory Rotation</h4>
+
+                <div class="rec-text">
                 Prioritize low shelf-life inventory
                 to reduce future wastage.
-                </p>
+                </div>
+
             </div>
             """, unsafe_allow_html=True)
 
