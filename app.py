@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import joblib
-import numpy as np
 import warnings
 
 # =========================================================
@@ -46,17 +45,6 @@ st.markdown("""
     border-radius: 12px;
 }
 
-/* KPI Text */
-[data-testid="stMetricValue"] {
-    font-size: 22px;
-    color: #111827;
-}
-
-[data-testid="stMetricLabel"] {
-    font-size: 13px;
-    color: #6b7280;
-}
-
 /* Sidebar */
 [data-testid="stSidebar"] {
     background-color: #111827;
@@ -78,21 +66,6 @@ st.markdown("""
 
 .stButton > button:hover {
     background-color: #1d4ed8;
-}
-
-/* Dropdown */
-div[data-baseweb="select"] > div {
-    border-radius: 8px;
-}
-
-/* Headers */
-h1, h2, h3 {
-    color: #111827;
-}
-
-/* Dataframe */
-[data-testid="stDataFrame"] {
-    border-radius: 10px;
 }
 
 /* Recommendation Cards */
@@ -185,7 +158,6 @@ if page == "Dashboard":
             [df['date'].min(), df['date'].max()]
         )
 
-        # Apply Filters
         if product != "All":
             df = df[df['product_name'] == product]
 
@@ -224,57 +196,6 @@ if page == "Dashboard":
         st.markdown('</div>', unsafe_allow_html=True)
 
         # =================================================
-        # INSIGHTS
-        # =================================================
-        st.markdown('<div class="section">', unsafe_allow_html=True)
-
-        top_product = (
-            df.groupby('product_name')['quantity_wasted_kg']
-            .sum()
-            .idxmax()
-        )
-
-        top_location = (
-            df.groupby('location')['loss_amount_inr']
-            .sum()
-            .idxmax()
-        )
-
-        mean = df['quantity_wasted_kg'].mean()
-        std = df['quantity_wasted_kg'].std()
-
-        df['anomaly'] = (
-            df['quantity_wasted_kg'] > (mean + 2 * std)
-        )
-
-        anomalies = df[df['anomaly']]
-
-        score = 100
-
-        if waste_pct > 10:
-            score -= 30
-
-        if df['temperature_celsius'].mean() > 30:
-            score -= 20
-
-        if len(anomalies) > len(df) * 0.1:
-            score -= 20
-
-        c1, c2, c3 = st.columns(3)
-
-        c1.metric("Health Score", f"{score}/100")
-        c2.metric("Anomalies", len(anomalies))
-        c3.metric(
-            "Anomaly %",
-            f"{(len(anomalies)/len(df))*100:.2f}%"
-        )
-
-        st.success(f"Top Waste Product: {top_product}")
-        st.warning(f"High Loss Location: {top_location}")
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        # =================================================
         # CHARTS
         # =================================================
         st.markdown('<div class="section">', unsafe_allow_html=True)
@@ -282,8 +203,6 @@ if page == "Dashboard":
         c1, c2 = st.columns(2)
 
         with c1:
-
-            st.subheader("Waste Trend Over Time")
 
             trend = (
                 df.groupby('date')['quantity_wasted_kg']
@@ -295,11 +214,8 @@ if page == "Dashboard":
                 trend,
                 x='date',
                 y='quantity_wasted_kg',
-                height=320
-            )
-
-            fig.update_traces(
-                line=dict(color=brand_color)
+                title="Waste Trend Over Time",
+                color_discrete_sequence=[brand_color]
             )
 
             st.plotly_chart(
@@ -309,61 +225,11 @@ if page == "Dashboard":
 
         with c2:
 
-            st.subheader("Temperature vs Waste")
-
             fig = px.scatter(
                 df,
                 x='temperature_celsius',
                 y='quantity_wasted_kg',
-                color_discrete_sequence=[brand_color],
-                height=320
-            )
-
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
-
-        c3, c4 = st.columns(2)
-
-        with c3:
-
-            st.subheader("Waste by Category")
-
-            waste_cat = (
-                df.groupby('category')['quantity_wasted_kg']
-                .sum()
-                .reset_index()
-            )
-
-            fig = px.pie(
-                waste_cat,
-                values='quantity_wasted_kg',
-                names='category',
-                hole=0.5,
-                color_discrete_sequence=colors
-            )
-
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
-
-        with c4:
-
-            st.subheader("Loss by Location")
-
-            loss_loc = (
-                df.groupby('location')['loss_amount_inr']
-                .sum()
-                .reset_index()
-            )
-
-            fig = px.bar(
-                loss_loc,
-                x='loss_amount_inr',
-                y='location',
-                orientation='h',
+                title="Temperature vs Waste",
                 color_discrete_sequence=[brand_color]
             )
 
@@ -389,10 +255,11 @@ elif page == "ML Prediction":
     encoders = joblib.load("encoders.pkl")
 
     def safe_encode(enc, val):
+
         return (
             enc.transform([val])[0]
             if val in enc.classes_
-            else -1
+            else 0
         )
 
     st.markdown('<div class="section">', unsafe_allow_html=True)
@@ -406,30 +273,30 @@ elif page == "ML Prediction":
             encoders['product_name'].classes_
         )
 
-        location = st.selectbox(
-            "Location",
-            encoders['location'].classes_
+        category = st.selectbox(
+            "Category",
+            encoders['category'].classes_
         )
 
     with c2:
 
         quantity = st.number_input(
-            "Quantity",
+            "Quantity Ordered (KG)",
             10,
-            1000,
+            5000,
             100
         )
 
         temperature = st.slider(
-            "Temperature",
-            10,
+            "Temperature (°C)",
+            0,
             50,
             25
         )
 
         humidity = st.slider(
-            "Humidity",
-            20,
+            "Humidity (%)",
+            10,
             100,
             60
         )
@@ -437,47 +304,82 @@ elif page == "ML Prediction":
     with c3:
 
         unit_cost = st.number_input(
-            "Unit Cost",
-            10,
-            200,
+            "Unit Cost (₹)",
+            1,
+            1000,
             50
         )
 
         storage_capacity = st.number_input(
-            "Storage Capacity",
-            500,
-            5000,
+            "Storage Capacity (KG)",
+            100,
+            10000,
             2000
         )
 
         shelf_life = st.number_input(
-            "Shelf Life",
+            "Shelf Life (Days)",
             1,
-            30,
+            60,
             7
         )
 
-    category = st.selectbox(
-        "Category",
-        encoders['category'].classes_
-    )
+    # =========================================================
+    # MODEL INPUT
+    # =========================================================
 
     today = pd.Timestamp.today()
 
     input_data = pd.DataFrame([{
-        "store_id": 1,
-        "product_name": safe_encode(encoders['product_name'], product),
-        "category": safe_encode(encoders['category'], category),
+
+        "warehouse_id": 1,
+
+        "product_id":
+            safe_encode(
+                encoders['product_name'],
+                product
+            ),
+
+        "category":
+            safe_encode(
+                encoders['category'],
+                category
+            ),
+
         "supplier_id": 101,
+
         "quantity_ordered_kg": quantity,
+
         "unit_cost_inr": unit_cost,
+
         "shelf_life_days": shelf_life,
+
         "temperature_celsius": temperature,
+
         "humidity_percent": humidity,
+
         "storage_capacity_kg": storage_capacity,
-        "weekday": today.weekday(),
+
+        "day_of_week": today.weekday(),
+
         "month": today.month
     }])
+
+    # EXACT FEATURE ORDER
+    input_data = input_data[[
+        'warehouse_id',
+        'product_id',
+        'category',
+        'supplier_id',
+        'quantity_ordered_kg',
+        'unit_cost_inr',
+        'shelf_life_days',
+        'temperature_celsius',
+        'humidity_percent',
+        'storage_capacity_kg',
+        'day_of_week',
+        'month'
+    ]]
 
     if st.button("Predict"):
 
@@ -485,13 +387,13 @@ elif page == "ML Prediction":
         spoil = spoil_model.predict(input_data)[0]
 
         st.success(
-            f"Predicted Demand: {int(demand)}"
+            f"Predicted Demand: {int(demand)} KG"
         )
 
         if spoil == 1:
-            st.error("High Spoilage Risk")
+            st.error("⚠️ High Spoilage Risk")
         else:
-            st.success("Low Spoilage Risk")
+            st.success("✅ Low Spoilage Risk")
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -501,10 +403,6 @@ elif page == "ML Prediction":
 elif page == "Recommendations":
 
     st.title("AI Recommendation Center")
-
-    st.caption(
-        "Smart insights for inventory optimization and spoilage reduction"
-    )
 
     file = st.file_uploader(
         "Upload Dataset",
@@ -517,9 +415,6 @@ elif page == "Recommendations":
         df = pd.read_csv(file)
         df['date'] = pd.to_datetime(df['date'])
 
-        # =================================================
-        # CALCULATIONS
-        # =================================================
         total_ordered = df['quantity_ordered_kg'].sum()
         total_waste = df['quantity_wasted_kg'].sum()
         total_loss = df['loss_amount_inr'].sum()
@@ -543,18 +438,6 @@ elif page == "Recommendations":
 
         avg_temp = df['temperature_celsius'].mean()
 
-        mean = df['quantity_wasted_kg'].mean()
-        std = df['quantity_wasted_kg'].std()
-
-        df['anomaly'] = (
-            df['quantity_wasted_kg'] > (mean + 2 * std)
-        )
-
-        anomaly_count = len(df[df['anomaly']])
-
-        # =================================================
-        # SUMMARY METRICS
-        # =================================================
         st.markdown('<div class="section">', unsafe_allow_html=True)
 
         c1, c2, c3, c4 = st.columns(4)
@@ -562,18 +445,17 @@ elif page == "Recommendations":
         c1.metric("Waste %", f"{waste_pct:.2f}%")
         c2.metric("Total Waste", f"{total_waste:,.0f} KG")
         c3.metric("Financial Loss", f"₹ {total_loss:,.0f}")
-        c4.metric("Anomalies", anomaly_count)
+        c4.metric("Avg Temp", f"{avg_temp:.1f}°C")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
         # =================================================
-        # STRATEGIC RECOMMENDATIONS
+        # RECOMMENDATION CARDS
         # =================================================
         st.subheader("Strategic Recommendations")
 
         c1, c2, c3, c4 = st.columns(4)
 
-        # CARD 1
         with c1:
 
             st.markdown(f"""
@@ -581,35 +463,30 @@ elif page == "Recommendations":
                 <h4>🔴 High Waste Product</h4>
                 <p>
                 Reduce procurement quantity for
-                <b>{top_product}</b>
-                to minimize spoilage losses.
+                <b>{top_product}</b>.
                 </p>
             </div>
             """, unsafe_allow_html=True)
 
-        # CARD 2
         with c2:
 
             st.markdown(f"""
             <div class="equal-card blue-card">
                 <h4>🔵 Storage Optimization</h4>
                 <p>
-                Improve warehouse handling and
-                storage conditions in
+                Improve storage conditions in
                 <b>{top_location}</b>.
                 </p>
             </div>
             """, unsafe_allow_html=True)
 
-        # CARD 3
         with c3:
 
             temp_msg = (
-                "High warehouse temperature detected. "
                 "Deploy cooling optimization."
                 if avg_temp > 30
                 else
-                "Warehouse temperature is within safe range."
+                "Temperature is stable."
             )
 
             st.markdown(f"""
@@ -619,15 +496,13 @@ elif page == "Recommendations":
             </div>
             """, unsafe_allow_html=True)
 
-        # CARD 4
         with c4:
 
             st.markdown("""
             <div class="equal-card green-card">
                 <h4>🟢 Inventory Rotation</h4>
                 <p>
-                Prioritize low shelf-life inventory
-                to reduce future wastage.
+                Prioritize low shelf-life inventory.
                 </p>
             </div>
             """, unsafe_allow_html=True)
@@ -638,8 +513,6 @@ elif page == "Recommendations":
         # CHARTS
         # =================================================
         st.markdown('<div class="section">', unsafe_allow_html=True)
-
-        st.subheader("Operational Insights")
 
         c1, c2 = st.columns(2)
 
@@ -659,12 +532,6 @@ elif page == "Recommendations":
                 y='quantity_wasted_kg',
                 title="Top Waste Products",
                 color_discrete_sequence=[brand_color]
-            )
-
-            fig.update_layout(
-                height=350,
-                plot_bgcolor="white",
-                paper_bgcolor="white"
             )
 
             st.plotly_chart(
@@ -688,12 +555,6 @@ elif page == "Recommendations":
                 color_discrete_sequence=["#ef4444"]
             )
 
-            fig2.update_layout(
-                height=350,
-                plot_bgcolor="white",
-                paper_bgcolor="white"
-            )
-
             st.plotly_chart(
                 fig2,
                 use_container_width=True
@@ -701,46 +562,5 @@ elif page == "Recommendations":
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # =================================================
-        # ACTION PLAN TABLE
-        # =================================================
-        st.markdown('<div class="section">', unsafe_allow_html=True)
-
-        st.subheader("Priority Action Plan")
-
-        actions = pd.DataFrame({
-
-            "Priority": [
-                "High",
-                "Medium",
-                "Medium",
-                "Low"
-            ],
-
-            "Area": [
-                "Inventory Planning",
-                "Warehouse Cooling",
-                "Storage Optimization",
-                "Demand Forecasting"
-            ],
-
-            "Recommendation": [
-                f"Reduce ordering for {top_product}",
-                "Monitor warehouse temperature",
-                f"Improve storage in {top_location}",
-                "Use ML prediction before procurement"
-            ]
-        })
-
-        st.dataframe(
-            actions,
-            use_container_width=True,
-            hide_index=True
-        )
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
     else:
-        st.info(
-            "Upload dataset to generate AI recommendations."
-        )
+        st.info("Upload dataset to generate recommendations.")
