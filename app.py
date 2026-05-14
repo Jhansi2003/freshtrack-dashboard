@@ -537,75 +537,57 @@ elif page == "Recommendations":
         # =================================================
         st.subheader("Strategic Recommendations")
 
-        recommendation_html = f"""
-        <div style="display:flex;gap:15px;">
+        c1, c2, c3, c4 = st.columns(4)
 
-            <div style="
-                flex:1;
-                background-color:white;
-                padding:20px;
-                border-radius:12px;
-                border-top:5px solid #ef4444;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-            ">
-                <h4>High Waste Product</h4>
-                <p>
+        with c1:
+            st.info(
+                f"""
+                🔴 **High Waste Product**
+
                 Reduce procurement quantity for
-                <b>{top_product}</b>
+                **{top_product}**
                 to minimize spoilage losses.
-                </p>
-            </div>
+                """
+            )
 
-            <div style="
-                flex:1;
-                background-color:white;
-                padding:20px;
-                border-radius:12px;
-                border-top:5px solid #2563eb;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-            ">
-                <h4>Storage Optimization</h4>
-                <p>
-                Improve warehouse handling and storage
-                conditions in <b>{top_location}</b>.
-                </p>
-            </div>
+        with c2:
+            st.info(
+                f"""
+                🔵 **Storage Optimization**
 
-            <div style="
-                flex:1;
-                background-color:white;
-                padding:20px;
-                border-radius:12px;
-                border-top:5px solid #f59e0b;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-            ">
-                <h4>Temperature Risk</h4>
-                <p>
-                {"High warehouse temperature detected. Deploy cooling optimization."
+                Improve warehouse handling and
+                storage conditions in
+                **{top_location}**.
+                """
+            )
+
+        with c3:
+
+            temp_msg = (
+                "High warehouse temperature detected. "
+                "Deploy cooling optimization."
                 if avg_temp > 30
-                else "Warehouse temperature is within safe range."}
-                </p>
-            </div>
+                else
+                "Warehouse temperature is within safe range."
+            )
 
-            <div style="
-                flex:1;
-                background-color:white;
-                padding:20px;
-                border-radius:12px;
-                border-top:5px solid #10b981;
-                box-shadow:0 2px 10px rgba(0,0,0,0.05);
-            ">
-                <h4>Inventory Rotation</h4>
-                <p>
+            st.warning(
+                f"""
+                🟠 **Temperature Risk**
+
+                {temp_msg}
+                """
+            )
+
+        with c4:
+            st.success(
+                """
+                🟢 **Inventory Rotation**
+
                 Prioritize low shelf-life inventory
                 to reduce future wastage.
-                </p>
-            </div>
-
-        </div>
-        """
-
-        st.markdown(recommendation_html, unsafe_allow_html=True)
+                """
+            )
 
         st.write("")
 
