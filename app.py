@@ -127,7 +127,6 @@ if page == "Dashboard":
     if file:
 
         df = pd.read_csv(file)
-
         df['date'] = pd.to_datetime(df['date'])
 
         # =================================================
@@ -482,7 +481,6 @@ elif page == "Recommendations":
     if file:
 
         df = pd.read_csv(file)
-
         df['date'] = pd.to_datetime(df['date'])
 
         # =================================================
@@ -544,7 +542,7 @@ elif page == "Recommendations":
         # CARD 1
         with c1:
 
-            st.markdown(f"""
+            card1 = f"""
             <div style="
                 background-color:white;
                 padding:18px;
@@ -553,12 +551,8 @@ elif page == "Recommendations":
                 box-shadow:0 2px 10px rgba(0,0,0,0.05);
                 border-top:5px solid #ef4444;
             ">
-
-                <h4 style="
-                    color:#111827;
-                    margin-bottom:15px;
-                ">
-                High Waste Product
+                <h4 style="color:#111827;">
+                    High Waste Product
                 </h4>
 
                 <p style="
@@ -566,18 +560,19 @@ elif page == "Recommendations":
                     line-height:1.7;
                     color:#374151;
                 ">
-                Reduce procurement quantity for
-                <b>{top_product}</b>
-                to minimize spoilage losses.
+                    Reduce procurement quantity for
+                    <b>{top_product}</b>
+                    to minimize spoilage losses.
                 </p>
-
             </div>
-            """, unsafe_allow_html=True)
+            """
+
+            st.markdown(card1, unsafe_allow_html=True)
 
         # CARD 2
         with c2:
 
-            st.markdown(f"""
+            card2 = f"""
             <div style="
                 background-color:white;
                 padding:18px;
@@ -586,12 +581,8 @@ elif page == "Recommendations":
                 box-shadow:0 2px 10px rgba(0,0,0,0.05);
                 border-top:5px solid #2563eb;
             ">
-
-                <h4 style="
-                    color:#111827;
-                    margin-bottom:15px;
-                ">
-                Storage Optimization
+                <h4 style="color:#111827;">
+                    Storage Optimization
                 </h4>
 
                 <p style="
@@ -599,13 +590,14 @@ elif page == "Recommendations":
                     line-height:1.7;
                     color:#374151;
                 ">
-                Improve warehouse handling and
-                storage conditions in
-                <b>{top_location}</b>.
+                    Improve warehouse handling and
+                    storage conditions in
+                    <b>{top_location}</b>.
                 </p>
-
             </div>
-            """, unsafe_allow_html=True)
+            """
+
+            st.markdown(card2, unsafe_allow_html=True)
 
         # CARD 3
         with c3:
@@ -618,7 +610,7 @@ elif page == "Recommendations":
                 "Warehouse temperature is within safe range."
             )
 
-            st.markdown(f"""
+            card3 = f"""
             <div style="
                 background-color:white;
                 padding:18px;
@@ -627,12 +619,8 @@ elif page == "Recommendations":
                 box-shadow:0 2px 10px rgba(0,0,0,0.05);
                 border-top:5px solid #f59e0b;
             ">
-
-                <h4 style="
-                    color:#111827;
-                    margin-bottom:15px;
-                ">
-                Temperature Risk
+                <h4 style="color:#111827;">
+                    Temperature Risk
                 </h4>
 
                 <p style="
@@ -640,16 +628,17 @@ elif page == "Recommendations":
                     line-height:1.7;
                     color:#374151;
                 ">
-                {temp_msg}
+                    {temp_msg}
                 </p>
-
             </div>
-            """, unsafe_allow_html=True)
+            """
+
+            st.markdown(card3, unsafe_allow_html=True)
 
         # CARD 4
         with c4:
 
-            st.markdown("""
+            card4 = """
             <div style="
                 background-color:white;
                 padding:18px;
@@ -658,12 +647,8 @@ elif page == "Recommendations":
                 box-shadow:0 2px 10px rgba(0,0,0,0.05);
                 border-top:5px solid #10b981;
             ">
-
-                <h4 style="
-                    color:#111827;
-                    margin-bottom:15px;
-                ">
-                Inventory Rotation
+                <h4 style="color:#111827;">
+                    Inventory Rotation
                 </h4>
 
                 <p style="
@@ -671,12 +656,13 @@ elif page == "Recommendations":
                     line-height:1.7;
                     color:#374151;
                 ">
-                Prioritize low shelf-life inventory
-                to reduce future wastage.
+                    Prioritize low shelf-life inventory
+                    to reduce future wastage.
                 </p>
-
             </div>
-            """, unsafe_allow_html=True)
+            """
+
+            st.markdown(card4, unsafe_allow_html=True)
 
         st.write("")
 
