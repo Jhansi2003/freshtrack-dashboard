@@ -111,14 +111,9 @@ colors = px.colors.qualitative.Set2
 # =========================================================
 # SIDEBAR LOGO
 # =========================================================
-st.sidebar.markdown(
-    """
-    <div style="text-align:center; padding-bottom:20px;">
-        <img src="https://github.com/Jhansi2003/freshtrack-dashboard/blob/e60415b0bdf8f1ddf61a93e1efe3cf35d4a33605/miracle_logo.png"
-        width="230">
-    </div>
-    """,
-    unsafe_allow_html=True
+st.sidebar.image(
+    "miracle_logo.png",
+    width=250
 )
 
 # =========================================================
