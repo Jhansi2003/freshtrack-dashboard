@@ -1,629 +1,300 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-import joblib
-import warnings
-
-# =========================================================
-# REMOVE WARNINGS
-# =========================================================
-warnings.filterwarnings("ignore")
-
-# =========================================================
-# PAGE CONFIG
-# =========================================================
-st.set_page_config(
-    page_title="FreshTrack AI",
-    layout="wide"
-)
-
-# =========================================================
-# CUSTOM CSS
-# =========================================================
-st.markdown("""
-<style>
-
-/* Main Background */
-.stApp {
-    background-color: #f5f7fa;
-}
-
-/* Section Cards */
-.section {
-    background-color: white;
-    border-radius: 14px;
-    padding: 18px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-/* KPI Cards */
-[data-testid="stMetric"] {
-    background-color: white;
-    border-left: 4px solid #2563eb;
-    padding: 12px;
-    border-radius: 12px;
-}
-
-/* Sidebar */
-[data-testid="stSidebar"] {
-    background-color: #111827;
-}
-
-[data-testid="stSidebar"] * {
-    color: white !important;
-}
-
-/* Buttons */
-.stButton > button {
-    background-color: #2563eb;
-    color: white;
-    border-radius: 8px;
-    border: none;
-    height: 42px;
-    width: 100%;
-}
-
-.stButton > button:hover {
-    background-color: #1d4ed8;
-}
-
-/* Recommendation Cards */
-.equal-card {
-    height: 220px;
-    padding: 18px;
-    border-radius: 14px;
-    color: #111827;
-    font-size: 15px;
-    line-height: 1.7;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
-
-.red-card {
-    background-color: #fee2e2;
-    border-left: 6px solid #ef4444;
-}
-
-.blue-card {
-    background-color: #dbeafe;
-    border-left: 6px solid #2563eb;
-}
-
-.orange-card {
-    background-color: #ffedd5;
-    border-left: 6px solid #f59e0b;
-}
-
-.green-card {
-    background-color: #dcfce7;
-    border-left: 6px solid #10b981;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-brand_color = "#2563eb"
-colors = px.colors.qualitative.Set2
-
-# =========================================================
-# SIDEBAR LOGO
-# =========================================================
-st.sidebar.image(
-    "miracle_logo.png",
-    width=250
-)
-
-# =========================================================
-# SIDEBAR
-# =========================================================
-st.sidebar.title("FreshTrack AI")
-
-page = st.sidebar.radio(
-    "Navigation",
-    ["Dashboard", "ML Prediction", "Recommendations"]
-)
-
-# =========================================================
-# DASHBOARD PAGE
-# =========================================================
-if page == "Dashboard":
-
-    st.title("FreshTrack AI Dashboard")
-
-    file = st.file_uploader(
-        "Upload Dataset",
-        type=["csv"],
-        key="dashboard_upload"
-    )
-
-    if file:
-
-        df = pd.read_csv(file)
-        df['date'] = pd.to_datetime(df['date'])
-
-        # =================================================
-        # FILTERS
-        # =================================================
-        st.markdown('<div class="section">', unsafe_allow_html=True)
-
-        c1, c2, c3 = st.columns(3)
-
-        product = c1.selectbox(
-            "Select Product",
-            ["All"] + list(df['product_name'].unique())
-        )
-
-        location = c2.selectbox(
-            "Select Location",
-            ["All"] + list(df['location'].unique())
-        )
-
-        date_range = c3.date_input(
-            "Date Range",
-            [df['date'].min(), df['date'].max()]
-        )
-
-        if product != "All":
-            df = df[df['product_name'] == product]
-
-        if location != "All":
-            df = df[df['location'] == location]
-
-        df = df[
-            (df['date'] >= pd.to_datetime(date_range[0])) &
-            (df['date'] <= pd.to_datetime(date_range[1]))
-        ]
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        # =================================================
-        # KPI METRICS
-        # =================================================
-        st.markdown('<div class="section">', unsafe_allow_html=True)
-
-        total_ordered = df['quantity_ordered_kg'].sum()
-        total_used = df['quantity_used_kg'].sum()
-        total_waste = df['quantity_wasted_kg'].sum()
-        total_loss = df['loss_amount_inr'].sum()
-
-        waste_pct = (
-            (total_waste / total_ordered) * 100
-            if total_ordered else 0
-        )
-
-        c1, c2, c3, c4 = st.columns(4)
-
-        c1.metric("Ordered", f"{total_ordered:,.0f} KG")
-        c2.metric("Used", f"{total_used:,.0f} KG")
-        c3.metric("Waste %", f"{waste_pct:.2f}%")
-        c4.metric("Loss", f"₹ {total_loss:,.0f}")
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        # =================================================
-        # CHARTS
-        # =================================================
-        st.markdown('<div class="section">', unsafe_allow_html=True)
-
-        c1, c2 = st.columns(2)
-
-        with c1:
-
-            trend = (
-                df.groupby('date')['quantity_wasted_kg']
-                .sum()
-                .reset_index()
-            )
-
-            fig = px.line(
-                trend,
-                x='date',
-                y='quantity_wasted_kg',
-                title="Waste Trend Over Time",
-                color_discrete_sequence=[brand_color]
-            )
-
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
-
-        with c2:
-
-            fig = px.scatter(
-                df,
-                x='temperature_celsius',
-                y='quantity_wasted_kg',
-                title="Temperature vs Waste",
-                color_discrete_sequence=[brand_color]
-            )
-
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    else:
-        st.info("Upload dataset to begin.")
-
-# =========================================================
-# ML PREDICTION PAGE
-# =========================================================
-elif page == "ML Prediction":
-
-    st.title("ML Prediction Center")
-
-    demand_model = joblib.load("demand_model.pkl")
-    spoil_model = joblib.load("spoilage_model.pkl")
-    encoders = joblib.load("encoders.pkl")
-
-    def safe_encode(enc, val):
-
-        return (
-            enc.transform([val])[0]
-            if val in enc.classes_
-            else 0
-        )
-
-    st.markdown('<div class="section">', unsafe_allow_html=True)
-
-    c1, c2, c3 = st.columns(3)
-
-    with c1:
-
-        product = st.selectbox(
-            "Product",
-            encoders['product_name'].classes_
-        )
-
-        category = st.selectbox(
-            "Category",
-            encoders['category'].classes_
-        )
-
-    with c2:
-
-        quantity = st.number_input(
-            "Quantity Ordered (KG)",
-            10,
-            5000,
-            100
-        )
-
-        temperature = st.slider(
-            "Temperature (°C)",
-            0,
-            50,
-            25
-        )
-
-        humidity = st.slider(
-            "Humidity (%)",
-            10,
-            100,
-            60
-        )
-
-    with c3:
-
-        unit_cost = st.number_input(
-            "Unit Cost (₹)",
-            1,
-            1000,
-            50
-        )
-
-        storage_capacity = st.number_input(
-            "Storage Capacity (KG)",
-            100,
-            10000,
-            2000
-        )
-
-        shelf_life = st.number_input(
-            "Shelf Life (Days)",
-            1,
-            60,
-            7
-        )
-
-    # =========================================================
-    # MODEL INPUT
-    # =========================================================
-
-    today = pd.Timestamp.today()
-
-    input_data = pd.DataFrame([{
-
-        "warehouse_id": 1,
-
-        "product_id":
-            safe_encode(
-                encoders['product_name'],
-                product
-            ),
-
-        "category":
-            safe_encode(
-                encoders['category'],
-                category
-            ),
-
-        "supplier_id": 101,
-
-        "quantity_ordered_kg": quantity,
-
-        "unit_cost_inr": unit_cost,
-
-        "shelf_life_days": shelf_life,
-
-        "temperature_celsius": temperature,
-
-        "humidity_percent": humidity,
-
-        "storage_capacity_kg": storage_capacity,
-
-        "day_of_week": today.weekday(),
-
-        "month": today.month
-    }])
-
-    input_data = input_data[[
-        'warehouse_id',
-        'product_id',
-        'category',
-        'supplier_id',
-        'quantity_ordered_kg',
-        'unit_cost_inr',
-        'shelf_life_days',
-        'temperature_celsius',
-        'humidity_percent',
-        'storage_capacity_kg',
-        'day_of_week',
-        'month'
-    ]]
-
-    if st.button("Predict"):
-
-        demand = demand_model.predict(input_data)[0]
-        spoil = spoil_model.predict(input_data)[0]
-
-        st.success(
-            f"Predicted Demand: {int(demand)} KG"
-        )
-
-        if spoil == 1:
-            st.error("⚠️ High Spoilage Risk")
-        else:
-            st.success("✅ Low Spoilage Risk")
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# =========================================================
-# RECOMMENDATIONS PAGE
-# =========================================================
-elif page == "Recommendations":
-
-    st.title("AI Recommendation Center")
-
-    file = st.file_uploader(
-        "Upload Dataset",
-        type=["csv"],
-        key="recommendation_upload"
-    )
-
-    if file:
-
-        df = pd.read_csv(file)
-        df['date'] = pd.to_datetime(df['date'])
-
-        total_ordered = df['quantity_ordered_kg'].sum()
-        total_waste = df['quantity_wasted_kg'].sum()
-        total_loss = df['loss_amount_inr'].sum()
-
-        waste_pct = (
-            (total_waste / total_ordered) * 100
-            if total_ordered else 0
-        )
-
-        top_product = (
-            df.groupby('product_name')['quantity_wasted_kg']
-            .sum()
-            .idxmax()
-        )
-
-        top_location = (
-            df.groupby('location')['loss_amount_inr']
-            .sum()
-            .idxmax()
-        )
-
-        avg_temp = df['temperature_celsius'].mean()
-
-        # =================================================
-        # KPI METRICS
-        # =================================================
-        st.markdown('<div class="section">', unsafe_allow_html=True)
-
-        c1, c2, c3, c4 = st.columns(4)
-
-        c1.metric("Waste %", f"{waste_pct:.2f}%")
-        c2.metric("Total Waste", f"{total_waste:,.0f} KG")
-        c3.metric("Financial Loss", f"₹ {total_loss:,.0f}")
-        c4.metric("Avg Temp", f"{avg_temp:.1f}°C")
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        # =================================================
-        # STRATEGIC RECOMMENDATIONS
-        # =================================================
-        st.subheader("Strategic Recommendations")
-
-        c1, c2, c3, c4 = st.columns(4)
-
-        with c1:
-
-            st.markdown(f"""
-            <div class="equal-card red-card">
-                <h4>🔴 High Waste Product</h4>
-                <p>
-                Reduce procurement quantity for
-                <b>{top_product}</b>.
-                </p>
+import React from 'react';
+import { 
+  ShieldAlert, 
+  Box, 
+  ThermometerSnowflake, 
+  RefreshCcw,
+  Flag,
+  ArrowRight,
+  TrendingDown,
+  Clock,
+  PieChart as PieChartIcon
+} from 'lucide-react';
+import { 
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  Tooltip as ReTooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid
+} from 'recharts';
+import { motion } from 'motion/react';
+import { SAMPLE_DATA } from '@/constants';
+import { cn } from '@/lib/utils';
+
+export default function RecommendationsPage() {
+  // Aggregate data for recommendations
+  const stats = React.useMemo(() => {
+    const totalWasted = SAMPLE_DATA.reduce((acc, d) => acc + d.quantity_wasted_kg, 0);
+    const totalLoss = SAMPLE_DATA.reduce((acc, d) => acc + d.loss_amount_inr, 0);
+    
+    const locationLoss = SAMPLE_DATA.reduce((acc: any, d) => {
+      acc[d.location] = (acc[d.location] || 0) + d.loss_amount_inr;
+      return acc;
+    }, {});
+    
+    const topLocation = Object.entries(locationLoss).sort((a: any, b: any) => b[1] - a[1])[0][0];
+    
+    const productWaste = SAMPLE_DATA.reduce((acc: any, d) => {
+      acc[d.product_name] = (acc[d.product_name] || 0) + d.quantity_wasted_kg;
+      return acc;
+    }, {});
+    
+    const topProduct = Object.entries(productWaste).sort((a: any, b: any) => b[1] - a[1])[0][0];
+
+    const pieData = Object.entries(locationLoss).map(([name, value]) => ({ name, value }));
+    const productBarData = Object.entries(productWaste)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a,b) => (b.value as number) - (a.value as number))
+      .slice(0, 5);
+
+    return { totalWasted, totalLoss, topProduct, topLocation, pieData, productBarData };
+  }, []);
+
+  const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f97316', '#10b981'];
+
+  return (
+    <div className="space-y-12 animate-in fade-in duration-700 pb-20">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold text-white tracking-tight">AI Recommendation Center</h2>
+          <p className="text-text-dim text-sm">Data-driven strategies to eliminate inventory inefficiency.</p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-bold uppercase tracking-widest border border-emerald-500/20">
+           Engine Status: Active
+        </div>
+      </header>
+
+      {/* Strategic Cards */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <RecCard 
+          icon={<ShieldAlert size={22} />} 
+          title="High Waste Pivot" 
+          description={`Procurement for ${stats.topProduct} is exceeding demand by 22%. Consider reduction in next batch.`}
+          color="rose"
+        />
+        <RecCard 
+          icon={<Box size={22} />} 
+          title="Storage Logic" 
+          description={`Optimizing bin placement in ${stats.topLocation} could reduce transit bruising by approx. 8.4%.`}
+          color="blue"
+        />
+        <RecCard 
+          icon={<ThermometerSnowflake size={22} />} 
+          title="Variable Cooling" 
+          description="Warehouse A detected 2°C variance. Deploy localized cooling for leaf-category items."
+          color="amber"
+        />
+        <RecCard 
+          icon={<RefreshCcw size={22} />} 
+          title="FIFO Enforcement" 
+          description="Priority inventory rotation required for Dairy category to avoid expiry cluster next week."
+          color="emerald"
+        />
+      </section>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Bar Chart */}
+        <div className="lg:col-span-2 bg-card p-10 rounded-3xl border border-border shadow-2xl space-y-8">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-3">
+              <TrendingDown className="text-rose-500" /> Top Loss Generators
+            </h3>
+            <span className="text-[9px] font-bold text-text-dim uppercase tracking-widest leading-none">Weight Wasted (KG)</span>
+          </div>
+          <div className="h-[320px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats.productBarData} layout="vertical" margin={{ left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#1f2937" opacity={0.3} />
+                <XAxis type="number" hide />
+                <YAxis 
+                  dataKey="name" 
+                  type="category" 
+                  axisLine={false} 
+                  tickLine={false}
+                  tick={{ fill: '#666', fontSize: 11, fontWeight: 600 }}
+                  width={140}
+                />
+                <ReTooltip cursor={{fill: 'rgba(255,255,255,0.02)'}} contentStyle={{ backgroundColor: '#111', borderRadius: '12px', border: '1px solid #262626' }} />
+                <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={16}>
+                  {stats.productBarData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Global Distribution */}
+        <div className="bg-card p-10 rounded-3xl border border-border shadow-2xl space-y-10">
+          <div className="space-y-1">
+            <h3 className="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-3">
+              <PieChartIcon className="text-brand" /> Loss Distribution
+            </h3>
+            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest">Financial footprint by node</p>
+          </div>
+          <div className="h-[240px] relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={stats.pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={65}
+                  outerRadius={95}
+                  paddingAngle={10}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {stats.pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <ReTooltip contentStyle={{ backgroundColor: '#111', border: '1px solid #262626', borderRadius: '8px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none translate-y-1">
+              <span className="text-[9px] font-bold text-[#666] uppercase tracking-widest">Aggregate</span>
+              <span className="text-2xl font-light text-white tracking-tight">₹{(stats.totalLoss/1000).toFixed(1)}k</span>
             </div>
-            """, unsafe_allow_html=True)
+          </div>
+          <div className="space-y-4 pt-4 border-t border-border/50">
+             {stats.pieData.map((item, idx) => (
+               <div key={item.name} className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full ring-4 ring-white/5" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                    <span className="text-xs font-bold text-[#bbb] uppercase tracking-wider">{item.name}</span>
+                 </div>
+                 <span className="text-xs font-bold text-white tracking-wider">₹{item.value.toLocaleString()}</span>
+               </div>
+             ))}
+          </div>
+        </div>
+      </div>
 
-        with c2:
+      {/* Action Plan Table */}
+      <section className="bg-card rounded-3xl border border-border shadow-2xl overflow-hidden">
+        <div className="p-8 flex items-center justify-between bg-white/[0.02] border-b border-border">
+          <div className="flex items-center gap-5">
+             <div className="p-3 bg-surface border border-border rounded-xl shadow-inner">
+                <Flag className="text-brand" size={24} />
+             </div>
+             <div>
+                <h3 className="text-lg font-bold text-white tracking-tight">Priority Interventions</h3>
+                <p className="text-xs text-text-dim font-medium uppercase tracking-widest mt-1">Operational response queue.</p>
+             </div>
+          </div>
+          <button className="text-[10px] font-bold text-brand uppercase tracking-widest hover:underline flex items-center gap-2">
+             Full Inventory Logs <ArrowRight size={14} />
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-white/5 text-[9px] font-bold uppercase tracking-[0.2em] text-[#666] border-b border-border">
+                <th className="px-10 py-6">Status Priority</th>
+                <th className="px-10 py-6">Sector</th>
+                <th className="px-10 py-6">Intervention Strategy</th>
+                <th className="px-10 py-6">Yield Gain</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              <ActionRow 
+                priority="Critical" 
+                area="Inventory Planning" 
+                rec={`Reduce procurement quota for ${stats.topProduct} by 15.4%.`} 
+                savings="₹12.4k Profit"
+                priorityColor="rose"
+              />
+              <ActionRow 
+                priority="High" 
+                area="Thermal Logistics" 
+                rec={`Relink cooling sensors in ${stats.topLocation}. Data drift detected.`} 
+                savings="₹4.2k Save"
+                priorityColor="amber"
+              />
+              <ActionRow 
+                priority="Medium" 
+                area="Staffing Flow" 
+                rec="Optimize stock rotation shifts for peak vegetable intake hours." 
+                savings="₹1.8k Save"
+                priorityColor="blue"
+              />
+              <ActionRow 
+                priority="Stabilized" 
+                area="Network Models" 
+                rec="Retrain Spoilage v2 model with recent humidity anomaly data." 
+                savings="Baseline"
+                priorityColor="slate"
+              />
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
 
-            st.markdown(f"""
-            <div class="equal-card blue-card">
-                <h4>🔵 Storage Optimization</h4>
-                <p>
-                Improve storage conditions in
-                <b>{top_location}</b>.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
+function RecCard({ icon, title, description, color }: { icon: React.ReactNode, title: string, description: string, color: 'rose' | 'blue' | 'amber' | 'emerald' }) {
+  const styles = {
+    rose: "bg-rose-500/5 border-rose-500/20 text-rose-500",
+    blue: "bg-brand/5 border-brand/20 text-brand",
+    amber: "bg-amber-500/5 border-amber-500/20 text-amber-500",
+    emerald: "bg-emerald-500/5 border-emerald-500/20 text-emerald-500"
+  };
+  
+  const iconStyles = {
+    rose: "bg-rose-500/10 text-rose-500",
+    blue: "bg-brand/10 text-brand",
+    amber: "bg-amber-500/10 text-amber-500",
+    emerald: "bg-emerald-500/10 text-emerald-500"
+  };
 
-        with c3:
+  return (
+    <motion.div 
+      whileHover={{ scale: 1.02, backgroundColor: 'rgba(255,255,255,0.02)' }}
+      className={cn("p-6 rounded-2xl border flex flex-col gap-5 transition-colors", styles[color])}
+    >
+      <div className={cn("p-3 rounded-xl w-fit border border-inherit shadow-inner", iconStyles[color])}>
+        {icon}
+      </div>
+      <div className="space-y-2">
+        <h4 className="font-bold tracking-tight text-white">{title}</h4>
+        <p className="text-xs leading-relaxed font-medium opacity-70">{description}</p>
+      </div>
+    </motion.div>
+  );
+}
 
-            temp_msg = (
-                "Deploy cooling optimization."
-                if avg_temp > 30
-                else
-                "Temperature is stable."
-            )
+function ActionRow({ priority, area, rec, savings, priorityColor }: { priority: string, area: string, rec: string, savings: string, priorityColor: string }) {
+  const pColors: any = {
+    rose: "bg-rose-500/10 text-rose-500 border-rose-500/25",
+    amber: "bg-amber-500/10 text-amber-500 border-amber-500/25",
+    blue: "bg-brand/10 text-brand border-brand/25",
+    slate: "bg-white/5 text-[#666] border-white/10"
+  };
 
-            st.markdown(f"""
-            <div class="equal-card orange-card">
-                <h4>🟠 Temperature Risk</h4>
-                <p>{temp_msg}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-        with c4:
-
-            st.markdown("""
-            <div class="equal-card green-card">
-                <h4>🟢 Inventory Rotation</h4>
-                <p>
-                Prioritize low shelf-life inventory.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-
-        st.write("")
-
-        # =================================================
-        # CHARTS
-        # =================================================
-        st.markdown('<div class="section">', unsafe_allow_html=True)
-
-        c1, c2 = st.columns(2)
-
-        with c1:
-
-            waste_products = (
-                df.groupby('product_name')['quantity_wasted_kg']
-                .sum()
-                .sort_values(ascending=False)
-                .head(5)
-                .reset_index()
-            )
-
-            fig = px.scatter(
-                waste_products,
-                x='product_name',
-                y='quantity_wasted_kg',
-                size='quantity_wasted_kg',
-                title="Top Waste Products",
-                color='quantity_wasted_kg',
-                color_continuous_scale='Blues',
-                height=400
-            )
-
-            fig.update_layout(
-                plot_bgcolor='white',
-                paper_bgcolor='white'
-            )
-
-            st.plotly_chart(
-                fig,
-                use_container_width=True
-            )
-
-        with c2:
-
-            loss_loc = (
-                df.groupby('location')['loss_amount_inr']
-                .sum()
-                .reset_index()
-            )
-
-            fig2 = px.pie(
-                loss_loc,
-                values='loss_amount_inr',
-                names='location',
-                title="Loss Distribution by Location",
-                hole=0.45,
-                color_discrete_sequence=colors
-            )
-
-            fig2.update_layout(
-                height=400,
-                paper_bgcolor='white'
-            )
-
-            st.plotly_chart(
-                fig2,
-                use_container_width=True
-            )
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-        # =================================================
-        # ACTION PLAN TABLE
-        # =================================================
-        st.markdown('<div class="section">', unsafe_allow_html=True)
-
-        st.subheader("Priority Action Plan")
-
-        actions = pd.DataFrame({
-
-            "Priority": [
-                "High",
-                "Medium",
-                "Medium",
-                "Low"
-            ],
-
-            "Area": [
-                "Inventory Planning",
-                "Warehouse Cooling",
-                "Storage Optimization",
-                "Demand Forecasting"
-            ],
-
-            "Recommendation": [
-                f"Reduce ordering for {top_product}",
-                "Monitor warehouse temperature",
-                f"Improve storage in {top_location}",
-                "Use ML prediction before procurement"
-            ]
-        })
-
-        st.dataframe(
-            actions,
-            use_container_width=True,
-            hide_index=True
-        )
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    else:
-        st.info("Upload dataset to generate recommendations.")
+  return (
+    <tr className="group hover:bg-white/[0.02] transition-colors">
+      <td className="px-10 py-6">
+        <span className={cn("text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border", pColors[priorityColor])}>
+          {priority}
+        </span>
+      </td>
+      <td className="px-10 py-6 font-bold text-white text-xs whitespace-nowrap">{area}</td>
+      <td className="px-10 py-6 text-[#888] text-xs font-medium max-w-sm leading-relaxed">{rec}</td>
+      <td className="px-10 py-6 text-right">
+        <div className="flex items-center justify-end gap-2 text-emerald-500 font-bold text-[10px] uppercase tracking-widest">
+          <TrendingDown size={14} className="stroke-[3]" />
+          {savings}
+        </div>
+      </td>
+    </tr>
+  );
+}
