@@ -16,33 +16,7 @@ st.set_page_config(
     page_title="FreshTrack AI",
     layout="wide"
 )
-# =========================================================
-# LOGO
-# =========================================================
-st.markdown("""
-<style>
 
-.logo-container {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.logo-container img {
-    width: 220px;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown(
-    """
-    <div class="logo-container">
-        <img src="https://github.com/Jhansi2003/freshtrack-dashboard/blob/e60415b0bdf8f1ddf61a93e1efe3cf35d4a33605/miracle_logo.png">
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 # =========================================================
 # CUSTOM CSS
 # =========================================================
@@ -133,6 +107,19 @@ st.markdown("""
 
 brand_color = "#2563eb"
 colors = px.colors.qualitative.Set2
+
+# =========================================================
+# SIDEBAR LOGO
+# =========================================================
+st.sidebar.markdown(
+    """
+    <div style="text-align:center; padding-bottom:20px;">
+        <img src="https://github.com/Jhansi2003/freshtrack-dashboard/blob/e60415b0bdf8f1ddf61a93e1efe3cf35d4a33605/miracle_logo.png"
+        width="230">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # =========================================================
 # SIDEBAR
@@ -544,9 +531,6 @@ elif page == "Recommendations":
 
         c1, c2 = st.columns(2)
 
-        # =================================================
-        # WASTE SCATTER PLOT
-        # =================================================
         with c1:
 
             waste_products = (
@@ -578,9 +562,6 @@ elif page == "Recommendations":
                 use_container_width=True
             )
 
-        # =================================================
-        # LOCATION PIE CHART
-        # =================================================
         with c2:
 
             loss_loc = (
