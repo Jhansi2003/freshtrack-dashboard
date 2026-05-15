@@ -16,7 +16,33 @@ st.set_page_config(
     page_title="FreshTrack AI",
     layout="wide"
 )
+# =========================================================
+# LOGO
+# =========================================================
+st.markdown("""
+<style>
 
+.logo-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.logo-container img {
+    width: 220px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown(
+    """
+    <div class="logo-container">
+        <img src="https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO/main/image(8).png">
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # =========================================================
 # CUSTOM CSS
 # =========================================================
