@@ -38,7 +38,7 @@ st.markdown("""
 st.markdown(
     """
     <div class="logo-container">
-        <img src="https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/YOUR_REPO/main/image(8).png">
+        <img src="https://github.com/Jhansi2003/freshtrack-dashboard/blob/e60415b0bdf8f1ddf61a93e1efe3cf35d4a33605/miracle_logo.png">
     </div>
     """,
     unsafe_allow_html=True
